@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeatMitra Dashboard</title>
+    <style>
+        :root {
+            --sidebar-bg: #0d2752;
+            --sidebar-hover: #1a3a70;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary-blue: #1e56a0;
+            --danger-red: #d32f2f;
+            --success-green: #2e7d32;
+            --warning-yellow: #fbc02d;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .sidebar-menu li {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #b0c4de;
+        }
+
+        .sidebar-menu li.active {
+            background-color: var(--primary-blue);
+            color: white;
+            border-left: 4px solid white;
+        }
+
+        .sidebar-menu li:hover:not(.active) {
+            background-color: var(--sidebar-hover);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--sidebar-bg);
+            color: white;
+        }
+
+        .header-title h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .header-title p {
+            font-size: 0.8rem;
+            color: #b0c4de;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #4db8ff;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 250px;
+            grid-template-rows: auto auto;
+            gap: 20px;
+            height: calc(100vh - 70px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Map Section */
+        .map-section {
+            grid-column: 1 / 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .map-container {
+            flex: 1;
+            background: linear-gradient(45deg, #2c7a2c, #ffff00, #ff0000);
+            border-radius: 8px;
+            position: relative;
+            min-height: 300px;
+            overflow: hidden;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .map-legend-color {
+            width: 15px;
+            height: 100px;
+            background: linear-gradient(to top, #000080, #008000, #ffff00, #ffa500, #ff0000, #8b0000);
+            margin: 5px 0;
+        }
+
+        /* Details Section */
+        .details-section {
+            grid-column: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .hotspot-title {
+            color: var(--danger-red);
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cause-analysis {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 15px 0;
+        }
+
+        .cause-item i {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 5px;
+        }
+
+        .recommendation {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--success-green);
+        }
+
+        .recommendation h4 {
+            color: var(--success-green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alt-strategies {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .alt-btn {
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Metrics Sidebar (Right) */
+        .metrics-section {
+            grid-column: 3 / 4;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .metric-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .metric-card.risk {
+            text-align: center;
+            display: block;
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+        }
+        
+        .metric-info h5 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+        .metric-info p {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* Table Section */
+        .table-section {
+            grid-column: 1 / 3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--primary-blue);
+            color: white;
+            font-weight: 500;
+        }
+
+        .score-bar {
+            width: 100px;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: var(--success-green);
+        }
+
+        /* Actions Section */
+        .action-section {
+            grid-column: 3 / 4;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: white;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            <li class="active"><i class="fas fa-home"></i> Overview</li>
+            <li><i class="fas fa-map"></i> Heat Map</li>
+            <li><i class="fas fa-fire"></i> Hotspots</li>
+            <li><i class="fas fa-layer-group"></i> Strategies</li>
+            <li><i class="fas fa-chart-bar"></i> Analytics</li>
+            <li><i class="fas fa-file-alt"></i> Reports</li>
+            <li><i class="fas fa-cog"></i> Settings</li>
+            <li><i class="fas fa-question-circle"></i> Help</li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-title">
+                <h1>HeatMitra – Urban Heat Decision Support System</h1>
+                <p>AI-Powered Insights for Cooler, Resilient Cities</p>
+            </div>
+            <div class="header-actions">
+                <div class="badge"><i class="fas fa-brain"></i>GREEN HACK</div>
+                <div style="font-size: 0.8rem; text-align: right;">
+                    <div>23 May 2025</div>
+                    <div>11:30 AM</div>
+                </div>
+                <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            
+            <div class="card map-section">
+                <div class="map-header">
+                    <span>Urban Heat Map <i class="fas fa-info-circle" style="color:#ccc;"></i></span>
+                    <span style="font-size: 0.8rem; font-weight:normal;">20 May 2025 <i class="far fa-calendar"></i> | Land Surface Temperature (LST) <i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="map-container">
+                    <div class="map-overlay">
+                        <div>LST (°C)</div>
+                        <div class="map-legend-color"></div>
+                        <div>25 - 55</div>
+                    </div>
+                    <div style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); color:white; font-weight:bold; text-align:center; text-shadow: 1px 1px 2px black;">
+                        CENTRAL<br>PATIALA
+                    </div>
+                </div>
+            </div>
+
+            <div class="card details-section">
+                <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Selected Hotspot</span>
+                    <div class="hotspot-title"><i class="fas fa-map-marker-alt"></i> Central Patiala</div>
+                </div>
+                
+                <div>
+                    <span style="font-size: 0.8rem; font-weight: bold;">Cause Analysis</span>
+                    <div class="cause-analysis">
+                        <div class="cause-item">
+                            <i class="fas fa-leaf"></i>
+                            <div>Low NDVI</div>
+                            <div style="font-size:0.6rem;">Low vegetation cover</div>
+                        </div>
+                        <div class="cause-item">
+                            <i class="fas fa-thermometer-half"></i>
+                            <div>High LST</div>
+                            <div style="font-size:0.6rem;">Elevated surface temp.</div>
+                        </div>
+                        <div class="cause-item">
+                            <i class="fas fa-city"></i>
+                            <div>Dense Built-up</div>
+                            <div style="font-size:0.6rem;">High impervious fraction</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recommendation">
+                    <span style="font-size: 0.8rem;">Recommended Strategy</span>
+                    <h4><i class="fas fa-home"></i> Cool Roof Program</h4>
+                </div>
+
+                <div>
+                    <span style="font-size: 0.8rem; font-weight: bold;">Alternative Strategies</span>
+                    <div class="alt-strategies">
+                        <button class="alt-btn"><i class="fas fa-road"></i> Cool Pavement</button>
+                        <button class="alt-btn"><i class="fas fa-tree"></i> Green Corridor</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-section">
+                <div class="card metric-card risk">
+                    <div style="font-size: 0.8rem; color: var(--text-main);">Risk Level</div>
+                    <div style="font-size: 1.2rem; font-weight: bold;">VERY HIGH</div>
+                </div>
+                <div class="card metric-card">
+                    <div class="metric-icon"><i class="fas fa-snowflake"></i></div>
+                    <div class="metric-info">
+                        <h5>Expected Cooling</h5>
+                        <p style="color: var(--primary-blue);">≈ 2.1°C</p>
+                    </div>
+                </div>
+                <div class="card metric-card">
+                    <div class="metric-icon"><i class="fas fa-rupee-sign"></i></div>
+                    <div class="metric-info">
+                        <h5>Estimated Cost</h5>
+                        <p>₹20 lakh/km²</p>
+                    </div>
+                </div>
+                <div class="card metric-card">
+                    <div class="metric-icon" style="color: var(--success-green);"><i class="fas fa-check-circle"></i></div>
+                    <div class="metric-info">
+                        <h5>Feasibility</h5>
+                        <p style="color: var(--success-green);">High</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card table-section">
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">Mitigation Strategy Comparison (Ranked)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Mitigation Strategy</th>
+                            <th>Suitability Score</th>
+                            <th>Estimated Cost (₹ lakh/km²)</th>
+                            <th>Expected Cooling (°C)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="color: var(--success-green); font-weight: bold;">1</td>
+                            <td><i class="fas fa-home" style="color:var(--success-green);"></i> Cool Roof Program</td>
+                            <td>88 <div class="score-bar"><div class="score-fill" style="width: 88%;"></div></div></td>
+                            <td>20</td>
+                            <td style="color: var(--success-green);">≈2.1°C</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--success-green); font-weight: bold;">2</td>
+                            <td><i class="fas fa-road" style="color:#555;"></i> Cool Pavement</td>
+                            <td>76 <div class="score-bar"><div class="score-fill" style="width: 76%;"></div></div></td>
+                            <td>25</td>
+                            <td style="color: var(--success-green);">≈1.6°C</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--success-green); font-weight: bold;">3</td>
+                            <td><i class="fas fa-tree" style="color:var(--success-green);"></i> Green Corridor</td>
+                            <td>72 <div class="score-bar"><div class="score-fill" style="width: 72%;"></div></div></td>
+                            <td>18</td>
+                            <td style="color: var(--success-green);">≈1.4°C</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--warning-yellow); font-weight: bold;">4</td>
+                            <td><i class="fas fa-store-alt" style="color:#555;"></i> Shading Structures</td>
+                            <td>61 <div class="score-bar"><div class="score-fill" style="width: 61%; background: var(--warning-yellow);"></div></div></td>
+                            <td>15</td>
+                            <td style="color: var(--warning-yellow);">≈1.1°C</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--warning-yellow); font-weight: bold;">5</td>
+                            <td><i class="fas fa-tint" style="color:var(--primary-blue);"></i> Urban Water Bodies</td>
+                            <td>55 <div class="score-bar"><div class="score-fill" style="width: 55%; background: var(--warning-yellow);"></div></div></td>
+                            <td>12</td>
+                            <td style="color: var(--warning-yellow);">≈0.9°C</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="action-section">
+                <button class="btn btn-primary"><i class="fas fa-file-download"></i> Download Report</button>
+                <button class="btn btn-outline"><i class="fas fa-balance-scale"></i> Compare Hotspots</button>
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i> Scores are derived using AI model combining multi-sensor data, urban parameters and feasibility factors.
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
